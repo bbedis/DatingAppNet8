@@ -2,44 +2,43 @@ using System.Security.Cryptography;
 using System.Text;
 using API.Data;
 using API.DTOs;
-using API.Entities;
 using API.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-public class AccountController(DataContext context, ITokenService tokenService) : BaseApiController
+public class AccountController(IUserRepository userRepository, ITokenService tokenService) : BaseApiController
 {
     [HttpPost("register")]
     public async Task<ActionResult<UserDto>> RegisterAsync([FromBody] RegisterDto register)
     {
-        if (await UserExists(register.UserName))
-            return BadRequest("Username is taken");
+        // if (await UserExists(register.UserName))
+        //     return BadRequest("Username is taken");
 
-        using var hmac = new HMACSHA512();
-        var user = new AppUser
-        {
-            UserName = register.UserName.ToLower(),
-            PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(register.Password)),
-            PasswordSalt = hmac.Key
-        };
+        return Ok();
+        // using var hmac = new HMACSHA512();
+        // var user = new AppUser
+        // {
+        //     UserName = register.UserName.ToLower(),
+        //     PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(register.Password)),
+        //     PasswordSalt = hmac.Key
+        // };
 
-        context.Users.Add(user);
-        await context.SaveChangesAsync();
+        // context.Users.Add(user);
+        // await context.SaveChangesAsync();
 
-        return new UserDto
-        {
-            UserName = user.UserName,
-            Token = tokenService.CreateToken(user)
-        };
+        // return new UserDto
+        // {
+        //     UserName = user.UserName,
+        //     Token = tokenService.CreateToken(user)
+        // };
     }
 
     [HttpPost("login")]
     public async Task<ActionResult<UserDto>> LoginAsync(LoginDto login)
     {
-        var user = await context.Users.FirstOrDefaultAsync(u => 
-            login.UserName.ToLower() == u.UserName );
+        var user = await userRepository.GetUserByUserNameAsync(login.UserName);
         
         var msg = "Invalid user name/password";
 
@@ -62,8 +61,8 @@ public class AccountController(DataContext context, ITokenService tokenService) 
         };
     }
 
-    private async Task<bool> UserExists(string userName)
-    {
-        return await context.Users.AnyAsync(u => u.UserName.ToLower() == userName.ToLower());
-    }
+    // private async Task<bool> UserExists(string userName)
+    // {
+    //     return await context.Users.AnyAsync(u => u.UserName.ToLower() == userName.ToLower());
+    // }
 }

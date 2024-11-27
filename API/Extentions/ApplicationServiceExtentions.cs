@@ -9,7 +9,6 @@ public static class ApplicationServiceExtentions
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration config)
     {
-        
         services.AddControllers();
 
         services.AddDbContext<DataContext>(options => {
@@ -18,6 +17,8 @@ public static class ApplicationServiceExtentions
 
         services.AddCors();
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddAutoMapper(typeof(Helpers.AutoMapperProfiles).Assembly);
         return services;
     }
 }
